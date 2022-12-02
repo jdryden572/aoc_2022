@@ -1,14 +1,21 @@
-use std::{str::FromStr, convert::Infallible};
-
 use helpers::read_lines_panicky;
 
 fn main() {
     println!("Part 1: {}", part1("input.txt"));
+    println!("Part 2: {}", part2("input.txt"));
 }
 
 fn part1(path: &str) -> usize {
     read_lines_panicky(path)
-        .map(|l| l.parse::<Game>().unwrap())
+        .map(|l| Game::parse_part1(&l))
+        .map(|g| g.play())
+        .map(|o| o.score())
+        .sum()
+}
+
+fn part2(path: &str) -> usize {
+    read_lines_panicky(path)
+        .map(|l| Game::parse_part2(&l))
         .map(|g| g.play())
         .map(|o| o.score())
         .sum()
@@ -39,17 +46,57 @@ impl Game {
             },
         }
     }
+
+    fn parse_part1(s: &str) -> Game {
+        let mut split = s.split(" ");
+        let opponent = Shoot::parse_part1(&split.next().unwrap());
+        let me = Shoot::parse_part1(&split.next().unwrap());
+        Game { opponent, me }
+    }
+
+    fn parse_part2(s: &str) -> Game {
+        let mut split = s.split(" ");
+        let opponent = Shoot::parse_part1(&split.next().unwrap());
+        let outcome = PlannedOutcome::parse(&split.next().unwrap());
+        let me = required_for_outcome(&opponent, &outcome);
+        Game { opponent, me }
+    }
 }
 
-impl FromStr for Game {
-    type Err = Infallible;
+enum PlannedOutcome {
+    Win,
+    Draw,
+    Lose,
+}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut split = s.split(" ");
-        let opponent = split.next().unwrap().parse().unwrap();
-        let me = split.next().unwrap().parse().unwrap();
-        let game = Game { opponent, me };
-        Ok(game)
+impl PlannedOutcome {
+    fn parse(s: &str) -> PlannedOutcome {
+        match s {
+            "X" => PlannedOutcome::Lose,
+            "Y" => PlannedOutcome::Draw,
+            "Z" => PlannedOutcome::Win,
+            _ => panic!("Unrecognized planned outcome"),
+        }
+    }
+}
+
+fn required_for_outcome(opponent: &Shoot, outcome: &PlannedOutcome) -> Shoot {
+    match opponent {
+        Shoot::Rock => match outcome {
+            PlannedOutcome::Win => Shoot::Paper,
+            PlannedOutcome::Draw => Shoot::Rock,
+            PlannedOutcome::Lose => Shoot::Scissors,
+        },
+        Shoot::Paper => match outcome {
+            PlannedOutcome::Win => Shoot::Scissors,
+            PlannedOutcome::Draw => Shoot::Paper,
+            PlannedOutcome::Lose => Shoot::Rock,
+        },
+        Shoot::Scissors => match outcome {
+            PlannedOutcome::Win => Shoot::Rock,
+            PlannedOutcome::Draw => Shoot::Scissors,
+            PlannedOutcome::Lose => Shoot::Paper,
+        },
     }
 }
 
@@ -67,19 +114,14 @@ impl Shoot {
             Shoot::Scissors => 3,
         }
     }
-}
 
-impl FromStr for Shoot {
-    type Err = Infallible;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let shoot = match s {
+    fn parse_part1(s: &str) -> Shoot {
+        match s {
             "A" | "X" => Shoot::Rock,
             "B" | "Y" => Shoot::Paper,
             "C" | "Z" => Shoot::Scissors,
-            _ => panic!("Unrecognized letter"),
-        };
-        Ok(shoot)
+            _ => panic!("Unrecognized shoot"),
+        }
     }
 }
 
@@ -111,5 +153,15 @@ mod tests {
     #[test]
     fn part1_final() {
         assert_eq!(9759, part1("input.txt"));
+    }
+
+    #[test]
+    fn part2_sample() {
+        assert_eq!(12, part2("test_input.txt"));
+    }
+
+    #[test]
+    fn part2_final() {
+        assert_eq!(12429, part2("input.txt"));
     }
 }
