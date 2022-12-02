@@ -1,8 +1,14 @@
 use helpers::read_lines_panicky;
 
+mod shorter;
+
 fn main() {
     println!("Part 1: {}", part1("input.txt"));
     println!("Part 2: {}", part2("input.txt"));
+
+    println!("\r\nTake 2...");
+    println!("Part 1: {}", shorter::part1("input.txt"));
+    println!("Part 2: {}", shorter::part2("input.txt"));
 }
 
 fn part1(path: &str) -> usize {
