@@ -21,56 +21,42 @@ fn split(line: &str) -> (char, char) {
     (op, me)
 }
 
-// Basically stolen from jonathanpaulson's python solution
+// Basically stolen from jonathanpaulson's python solution, but I added the numbers manually.
 // https://github.com/jonathanpaulson/AdventOfCode/blob/master/2022/2.py
 fn score_part1(op: char, me: char) -> usize {
-    let mut score = match me {
-        'X' => 1,
-        'Y' => 2,
-        'Z' => 3,
-        _ => panic!()
-    };
-    score += match (op, me) {
-        ('A', 'X') => 3,
-        ('A', 'Y') => 6,
-        ('A', 'Z') => 0,
+    match (op, me) {
+        ('A', 'X') => 4,
+        ('A', 'Y') => 8,
+        ('A', 'Z') => 3,
 
-        ('B', 'X') => 0,
-        ('B', 'Y') => 3,
-        ('B', 'Z') => 6,
+        ('B', 'X') => 1,
+        ('B', 'Y') => 5,
+        ('B', 'Z') => 9,
 
-        ('C', 'X') => 6,
-        ('C', 'Y') => 0,
-        ('C', 'Z') => 3,
+        ('C', 'X') => 7,
+        ('C', 'Y') => 2,
+        ('C', 'Z') => 6,
 
         _ => panic!()
-    };
-    score
+    }
 }
 
 fn score_part2(op: char, me: char) -> usize {
-    let mut score = match me {
-        'X' => 0,
-        'Y' => 3,
-        'Z' => 6,
-        _ => panic!()
-    };
-    score += match (op, me) {
+    match (op, me) {
         ('A', 'X') => 3,
-        ('A', 'Y') => 1,
-        ('A', 'Z') => 2,
+        ('A', 'Y') => 4,
+        ('A', 'Z') => 8,
 
         ('B', 'X') => 1,
-        ('B', 'Y') => 2,
-        ('B', 'Z') => 3,
+        ('B', 'Y') => 5,
+        ('B', 'Z') => 9,
 
         ('C', 'X') => 2,
-        ('C', 'Y') => 3,
-        ('C', 'Z') => 1,
+        ('C', 'Y') => 6,
+        ('C', 'Z') => 7,
 
         _ => panic!()
-    };
-    score
+    }
 }
 
 #[cfg(test)]
