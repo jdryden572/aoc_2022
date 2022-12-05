@@ -39,7 +39,7 @@ fn part2(path: &str) -> String {
 }
 
 fn top_crates(stacks: &[Vec<char>]) -> String {
-    stacks.into_iter().map(|s| s.last().unwrap()).collect()
+    stacks.iter().map(|s| s.last().unwrap()).collect()
 }
 
 fn parse_stacks(path: &str) -> Vec<Vec<char>> {
@@ -56,11 +56,11 @@ fn parse_stacks(path: &str) -> Vec<Vec<char>> {
 
     for line in lines.into_iter().rev() {
         let bytes = line.as_bytes();
-        for i in 0..num_stacks {
+        for (i, stack) in stacks.iter_mut().enumerate() {
             let idx = (i * 4) + 1;
             let c = bytes[idx];
             if c != b' ' {
-                stacks[i].push(c as char);
+                stack.push(c as char);
             }
         }
     }
