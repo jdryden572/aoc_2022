@@ -6,12 +6,12 @@ const RADIX: u32 = 10;
 
 fn main() {
     println!("Part 1: {}", part1("input.txt"));
-    //println!("Part 2: {}", part2("input.txt"));
+    println!("Part 2: {}", part2("input.txt"));
 }
 
 fn part1(path: &str) -> String {
     let mut stacks = parse_stacks(path);
-    //print(&stacks);
+
     for Step { count, from, to } in read_lines_panicky(path)
         .filter(|l| l.starts_with("move"))
         .map(|l| parse_step(&l))
@@ -20,40 +20,38 @@ fn part1(path: &str) -> String {
             let c = stacks[from].pop().unwrap();
             stacks[to].push(c);
         }
-
-        //print(&stacks);
     }
 
-    let mut result = String::new();
-    for mut stack in stacks {
-        result.push(stack.pop().unwrap());
-    }
-
-    result
+    top_crates(&stacks)
 }
 
-// fn print(stacks: &[Vec<char>]) {
-//     let max_height = stacks.into_iter().map(|s| s.len()).max().unwrap();
-//     for i in (0..max_height).rev() {
-//         use std::fmt::Write;
-//         let mut line = String::new();
-//         for stack in stacks {
-//             if stack.len() > i {
-//                 write!(&mut line, "[{}] ", stack[i]).unwrap();
-//             } else {
-//                 write!(&mut line, "    ").unwrap();
-//             }
-//         }
-//         println!("{}", line)
-//     }
-//     for i in 1..=stacks.len() {
-//         print!(" {}  ", i);
-//     }
-//     println!();
-// }
-
 fn part2(path: &str) -> String {
-    todo!()
+    let mut stacks = parse_stacks(path);
+    let mut temp = Vec::new();
+
+    for Step { count, from, to } in read_lines_panicky(path)
+        .filter(|l| l.starts_with("move"))
+        .map(|l| parse_step(&l))
+    {
+        for _ in 0..count {
+            let c = stacks[from].pop().unwrap();
+            temp.push(c);
+        }
+
+        while let Some(c) = temp.pop() {
+            stacks[to].push(c);
+        }
+    }
+
+    top_crates(&stacks)
+}
+
+fn top_crates(stacks: &[Vec<char>]) -> String {
+    let mut result = String::new();
+    for mut stack in stacks {
+        result.push(*stack.last().unwrap());
+    }
+    result
 }
 
 fn parse_stacks(path: &str) -> Vec<Vec<char>> {
@@ -89,6 +87,26 @@ fn parse_stacks(path: &str) -> Vec<Vec<char>> {
 
     stacks
 }
+
+// fn print(stacks: &[Vec<char>]) {
+//     let max_height = stacks.into_iter().map(|s| s.len()).max().unwrap();
+//     for i in (0..max_height).rev() {
+//         use std::fmt::Write;
+//         let mut line = String::new();
+//         for stack in stacks {
+//             if stack.len() > i {
+//                 write!(&mut line, "[{}] ", stack[i]).unwrap();
+//             } else {
+//                 write!(&mut line, "    ").unwrap();
+//             }
+//         }
+//         println!("{}", line)
+//     }
+//     for i in 1..=stacks.len() {
+//         print!(" {}  ", i);
+//     }
+//     println!();
+// }
 
 #[derive(PartialEq, Eq, Debug)]
 struct Step {
@@ -142,10 +160,10 @@ mod tests {
         assert_eq!("SHMSDGZVC", &part1("test_input.txt"));
     }
 
-    // #[test]
-    // fn part2_sample() {
-    //     assert_eq!(4, part2("test_input.txt"));
-    // }
+    #[test]
+    fn part2_sample() {
+        assert_eq!("MCD", &part2("test_input.txt"));
+    }
 
     // #[test]
     // fn part2_final() {
