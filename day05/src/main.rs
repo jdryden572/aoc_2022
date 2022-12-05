@@ -2,8 +2,6 @@ use helpers::read_lines_panicky;
 use lazy_static::lazy_static;
 use regex::Regex;
 
-const RADIX: u32 = 10;
-
 fn main() {
     println!("Part 1: {}", part1("input.txt"));
     println!("Part 2: {}", part2("input.txt"));
@@ -12,10 +10,7 @@ fn main() {
 fn part1(path: &str) -> String {
     let mut stacks = parse_stacks(path);
 
-    for Step { count, from, to } in read_lines_panicky(path)
-        .filter(|l| l.starts_with("move"))
-        .map(|l| parse_step(&l))
-    {
+    for Step { count, from, to } in parse_steps(path) {
         for _ in 0..count {
             let c = stacks[from].pop().unwrap();
             stacks[to].push(c);
@@ -29,10 +24,7 @@ fn part2(path: &str) -> String {
     let mut stacks = parse_stacks(path);
     let mut temp = Vec::new();
 
-    for Step { count, from, to } in read_lines_panicky(path)
-        .filter(|l| l.starts_with("move"))
-        .map(|l| parse_step(&l))
-    {
+    for Step { count, from, to } in parse_steps(path) {
         for _ in 0..count {
             let c = stacks[from].pop().unwrap();
             temp.push(c);
@@ -47,11 +39,7 @@ fn part2(path: &str) -> String {
 }
 
 fn top_crates(stacks: &[Vec<char>]) -> String {
-    let mut result = String::new();
-    for mut stack in stacks {
-        result.push(*stack.last().unwrap());
-    }
-    result
+    stacks.into_iter().map(|s| s.last().unwrap()).collect()
 }
 
 fn parse_stacks(path: &str) -> Vec<Vec<char>> {
@@ -61,18 +49,10 @@ fn parse_stacks(path: &str) -> Vec<Vec<char>> {
         .collect();
 
     let labels = lines.pop().unwrap();
-    let num_stacks = labels
-        .trim()
-        .chars()
-        .last()
-        .unwrap()
-        .to_digit(RADIX)
-        .unwrap() as usize;
+    let num_stacks = labels.chars().filter(|c| c.is_numeric()).count();
 
     let mut stacks = Vec::with_capacity(num_stacks);
-    for _ in 0..num_stacks {
-        stacks.push(Vec::new())
-    }
+    stacks.resize(num_stacks, Vec::new());
 
     for line in lines.into_iter().rev() {
         let bytes = line.as_bytes();
@@ -107,6 +87,12 @@ fn parse_stacks(path: &str) -> Vec<Vec<char>> {
 //     }
 //     println!();
 // }
+
+fn parse_steps(path: &str) -> impl Iterator<Item = Step> + '_ {
+    read_lines_panicky(path)
+        .filter(|l| l.starts_with("move"))
+        .map(|l| parse_step(&l))
+}
 
 #[derive(PartialEq, Eq, Debug)]
 struct Step {
@@ -145,19 +131,20 @@ mod tests {
 
     #[test]
     fn test_parse_step() {
+        // 'from' and 'to' are intentionally one less, for indexing position
         assert_eq!(
             Step {
                 count: 13,
                 from: 6,
                 to: 7
-            }, // intentionally one less, for indexing position
+            },
             parse_step("move 13 from 7 to 8")
         );
     }
 
     #[test]
     fn part1_final() {
-        assert_eq!("SHMSDGZVC", &part1("test_input.txt"));
+        assert_eq!("SHMSDGZVC", &part1("input.txt"));
     }
 
     #[test]
@@ -165,8 +152,8 @@ mod tests {
         assert_eq!("MCD", &part2("test_input.txt"));
     }
 
-    // #[test]
-    // fn part2_final() {
-    //     assert_eq!(827, part2("input.txt"));
-    // }
+    #[test]
+    fn part2_final() {
+        assert_eq!("VRZGHDFBQ", &part2("input.txt"));
+    }
 }
