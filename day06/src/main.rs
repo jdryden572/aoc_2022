@@ -7,35 +7,27 @@ fn main() {
 }
 
 fn part1(input: &str) -> usize {
-    input
-        .as_bytes()
-        .windows(4)
-        .enumerate()
-        .skip_while(|(_, window)| {
-            window
-                .iter()
-                .any(|c| window.iter().filter(|b| b == &c).count() > 1)
-        })
-        .map(|(i, _)| i)
-        .next()
-        .unwrap()
-        + 4
+    find_marker_character(input, 4)
 }
 
 fn part2(input: &str) -> usize {
+    find_marker_character(input, 14)
+}
+
+fn find_marker_character(input: &str, window_size: usize) -> usize {
     input
-        .as_bytes()
-        .windows(14)
-        .enumerate()
-        .skip_while(|(_, window)| {
-            window
-                .iter()
-                .any(|c| window.iter().filter(|b| b == &c).count() > 1)
-        })
-        .map(|(i, _)| i)
-        .next()
-        .unwrap()
-        + 14
+    .as_bytes()
+    .windows(window_size)
+    .enumerate()
+    .skip_while(|(_, window)| {
+        window
+            .iter()
+            .any(|c| window.iter().filter(|b| b == &c).count() > 1)
+    })
+    .map(|(i, _)| i)
+    .next()
+    .unwrap()
+    + window_size
 }
 
 #[cfg(test)]
