@@ -16,18 +16,18 @@ fn part2(input: &str) -> usize {
 
 fn find_marker_character(input: &str, window_size: usize) -> usize {
     input
-    .as_bytes()
-    .windows(window_size)
-    .enumerate()
-    .skip_while(|(_, window)| {
-        window
-            .iter()
-            .any(|c| window.iter().filter(|b| b == &c).count() > 1)
-    })
-    .map(|(i, _)| i)
-    .next()
-    .unwrap()
-    + window_size
+        .as_bytes()
+        .windows(window_size)
+        .enumerate()
+        .skip_while(|(_, window)| has_duplicates(window))
+        .map(|(i, _)| i)
+        .next()
+        .unwrap()
+        + window_size
+}
+
+fn has_duplicates(window: &[u8]) -> bool {
+    (1..window.len()).any(|i| window[i..].contains(&window[i - 1]))
 }
 
 #[cfg(test)]
