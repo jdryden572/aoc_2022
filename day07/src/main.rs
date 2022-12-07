@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::{PathBuf, Path}};
 
 use helpers::read_lines_panicky;
 
@@ -8,12 +8,12 @@ fn main() {
     println!("Part 2: {}", part2(&tree));
 }
 
-fn parse_file_system(path: &str) -> HashMap<String, Dir> {
+fn parse_file_system(path: &str) -> HashMap<PathBuf, Dir> {
     let lines: Vec<String> = read_lines_panicky(path).skip(1).collect(); // skip cd into /
     let root = Dir::default();
-    let mut stack = vec!["".to_owned()];
-    let mut tree: HashMap<String, Dir> = HashMap::new();
-    tree.insert("".to_owned(), root);
+    let mut path = PathBuf::from("/"); 
+    let mut tree: HashMap<PathBuf, Dir> = HashMap::new();
+    tree.insert(path.clone(), root);
 
     let mut i = 0;
     while i < lines.len() {
@@ -22,27 +22,27 @@ fn parse_file_system(path: &str) -> HashMap<String, Dir> {
         let command = Command::parse(&line);
         match command {
             Command::CdIn(dir_name) => {
-                stack.push(dir_name.to_owned());
+                // thanks AxlLind for showing me this API
+                path.push(dir_name);
             }
             Command::CdOut => {
-                let _ = stack.pop().unwrap();
+                let _ = path.pop();
             }
             Command::Ls => {
-                let path = stack.join("/");
                 let mut current_dir = tree.remove(&path).unwrap();
                 for line in (&lines[i..]).iter().take_while(|l| !l.starts_with("$")) {
                     i += 1;
                     if line.starts_with("dir") {
                         let name = line.split_at(4).1;
                         current_dir.child_dirs.push(name.to_owned());
-                        let new_path = format!("{}/{}", &path, name);
+                        let new_path = path.join(name);
                         tree.insert(new_path, Dir::default());
                     } else {
                         let (size, _) = line.split_once(" ").unwrap();
                         current_dir.size_of_files += size.parse::<usize>().unwrap();
                     }
                 }
-                tree.insert(path, current_dir);
+                tree.insert(path.clone(), current_dir);
             }
         }
     }
@@ -50,27 +50,29 @@ fn parse_file_system(path: &str) -> HashMap<String, Dir> {
     tree
 }
 
-fn part1(tree: &HashMap<String, Dir>) -> usize {
+fn part1(tree: &HashMap<PathBuf, Dir>) -> usize {
     let mut sizes = Vec::new();
-    get_all_sizes(tree, "", &mut sizes);
+    let root = PathBuf::from("/");
+    get_all_sizes(tree, &root, &mut sizes);
 
     sizes.into_iter().filter(|&s| s < 100_000).sum()
 }
 
-fn part2(tree: &HashMap<String, Dir>) -> usize {
+fn part2(tree: &HashMap<PathBuf, Dir>) -> usize {
     let mut sizes = Vec::new();
-    let total_size = get_all_sizes(tree, "", &mut sizes);
+    let root = PathBuf::from("/");
+    let total_size = get_all_sizes(tree, &root, &mut sizes);
     let minimum_to_delete = total_size - 40_000_000;
 
     sizes.sort();
     sizes.into_iter().find(|&s| s > minimum_to_delete).unwrap()
 }
 
-fn get_all_sizes(tree: &HashMap<String, Dir>, path: &str, sizes: &mut Vec<usize>) -> usize {
+fn get_all_sizes(tree: &HashMap<PathBuf, Dir>, path: &Path, sizes: &mut Vec<usize>) -> usize {
     let dir = tree.get(path).unwrap();
     let mut size = dir.size_of_files;
     for child in &dir.child_dirs {
-        let path = format!("{}/{}", path, child);
+        let path = path.join(child);
         size += get_all_sizes(tree, &path, sizes);
     }
 
