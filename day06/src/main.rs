@@ -18,10 +18,7 @@ fn find_marker_character(input: &str, window_size: usize) -> usize {
     input
         .as_bytes()
         .windows(window_size)
-        .enumerate()
-        .skip_while(|(_, window)| has_duplicates(window))
-        .map(|(i, _)| i)
-        .next()
+        .position(|window| !has_duplicates(window)) // thanks AxlLind for this idea
         .unwrap()
         + window_size
 }
