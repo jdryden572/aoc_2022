@@ -5,6 +5,7 @@ use helpers::read_lines_panicky;
 fn main() {
     let tree = parse_file_system("input.txt");
     println!("Part 1: {}", part1(&tree));
+    println!("Part 2: {}", part2(&tree));
 }
 
 fn parse_file_system(path: &str) -> HashMap<String, Dir> {
@@ -50,23 +51,30 @@ fn parse_file_system(path: &str) -> HashMap<String, Dir> {
 }
 
 fn part1(tree: &HashMap<String, Dir>) -> usize {
-    let mut total = 0;
-    get_sizes_part1(tree, "", &mut total);
+    let mut sizes = Vec::new();
+    get_all_sizes(tree, "", &mut sizes);
 
-    total
+    sizes.into_iter().filter(|&s| s < 100_000).sum()
 }
 
-fn get_sizes_part1(tree: &HashMap<String, Dir>, path: &str, total: &mut usize) -> usize {
+fn part2(tree: &HashMap<String, Dir>) -> usize {
+    let mut sizes = Vec::new();
+    let total_size = get_all_sizes(tree, "", &mut sizes);
+    let minimum_to_delete = total_size - 40_000_000;
+
+    sizes.sort();
+    sizes.into_iter().find(|&s| s > minimum_to_delete).unwrap()
+}
+
+fn get_all_sizes(tree: &HashMap<String, Dir>, path: &str, sizes: &mut Vec<usize>) -> usize {
     let dir = tree.get(path).unwrap();
     let mut size = dir.size_of_files;
     for child in &dir.child_dirs {
         let path = format!("{}/{}", path, child);
-        size += get_sizes_part1(tree, &path, total);
+        size += get_all_sizes(tree, &path, sizes);
     }
 
-    if size < 100_000 {
-        *total += size;
-    }
+    sizes.push(size);
 
     size
 }
@@ -112,5 +120,17 @@ mod tests {
     fn part1_final() {
         let tree = parse_file_system("input.txt");
         assert_eq!(1086293, part1(&tree));
+    }
+
+    #[test]
+    fn part2_sample() {
+        let tree = parse_file_system("test_input.txt");
+        assert_eq!(24933642, part2(&tree));
+    }
+
+    #[test]
+    fn part2_final() {
+        let tree = parse_file_system("input.txt");
+        assert_eq!(366028, part2(&tree));
     }
 }
