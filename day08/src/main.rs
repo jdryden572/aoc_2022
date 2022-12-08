@@ -24,10 +24,12 @@ fn part1(forest: &Forest) -> usize {
 
 fn part2(forest: &Forest) -> usize {
     let mut max_score = 0;
+    let verticals: Vec<_> = (0..forest.grid_size).map(|j| forest.vertical(j)).collect();
+
     for i in 0..forest.grid_size {
+        let horizontal = forest.horizontal(i);
         for j in 0..forest.grid_size {
-            let horizontal = forest.horizontal(i);
-            let vertical = forest.vertical(j);
+            let vertical = &verticals[j];
             let &Tree { x, y, height } = &horizontal[j];
 
             let (left, right) = horizontal.split_at(x);
