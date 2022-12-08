@@ -1,14 +1,16 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, time::Instant};
 
 use helpers::read_lines_panicky;
 
 fn main() {
-    println!("Part 1: {}", part1("input.txt"));
-    println!("Part 2: {}", part2("input.txt"));
+    let forest = Forest::parse("input.txt");
+    let now = Instant::now();
+    println!("Part 1: {} ({:?})", part1(&forest), now.elapsed());
+    let now = Instant::now();
+    println!("Part 2: {} ({:?})", part2(&forest), now.elapsed());
 }
 
-fn part1(path: &str) -> usize {
-    let forest = Forest::parse(path);
+fn part1(forest: &Forest) -> usize {
     let mut visible = HashSet::new();
     for i in 0..forest.grid_size {
         visible.extend(visible_from_outside(forest.horizontal(i).iter()).map(|t| t.to_xy()));
@@ -20,15 +22,13 @@ fn part1(path: &str) -> usize {
     visible.len()
 }
 
-fn part2(path: &str) -> usize {
-    let forest = Forest::parse(path);
-
+fn part2(forest: &Forest) -> usize {
     let mut max_score = 0;
     for i in 0..forest.grid_size {
         for j in 0..forest.grid_size {
             let horizontal = forest.horizontal(i);
             let vertical = forest.vertical(j);
-            let &Tree(x, y, height) = &horizontal[j];
+            let &Tree { x, y, height } = &horizontal[j];
 
             let (left, right) = horizontal.split_at(x);
             let right = &right[1..];
@@ -51,7 +51,7 @@ fn score_view<'a>(base_height: u8, view: impl Iterator<Item = &'a Tree>) -> usiz
     let mut score = 0;
     for tree in view {
         score += 1;
-        if tree.2 >= base_height {
+        if tree.height >= base_height {
             break;
         }
     }
@@ -63,8 +63,8 @@ fn visible_from_outside<'a>(
 ) -> impl Iterator<Item = &'a Tree> {
     let mut tallest: i8 = -1;
     trees.filter(move |t| {
-        if t.2 as i8 > tallest {
-            tallest = t.2 as i8;
+        if t.height as i8 > tallest {
+            tallest = t.height as i8;
             true
         } else {
             false
@@ -73,11 +73,19 @@ fn visible_from_outside<'a>(
 }
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
-struct Tree(usize, usize, u8);
+struct Tree {
+    x: usize, 
+    y: usize, 
+    height: u8
+}
 
 impl Tree {
-    fn to_xy(&self) -> (usize, usize) {
-        (self.0, self.1)
+    fn new(x: usize, y: usize, height: u8) -> Self {
+        Self { x, y, height }
+    }
+
+    fn to_xy(self) -> (usize, usize) {
+        (self.x, self.y)
     }
 }
 
@@ -106,7 +114,7 @@ impl Forest {
             let y = idx;
             let cur = start + i;
             let height = self.trees[cur];
-            trees.push(Tree(x, y, height));
+            trees.push(Tree::new(x, y, height));
         }
         trees
     }
@@ -119,7 +127,7 @@ impl Forest {
             let y = i;
             let cur = start + (i * self.grid_size);
             let height = self.trees[cur];
-            vec.push(Tree(x, y, height))
+            vec.push(Tree::new(x, y, height))
         }
         vec
     }
@@ -131,7 +139,7 @@ mod tests {
 
     #[test]
     fn part1_sample() {
-        assert_eq!(21, part1("test_input.txt"));
+        assert_eq!(21, part1(&Forest::parse("test_input.txt")));
     }
 
     #[test]
@@ -150,31 +158,31 @@ mod tests {
         let forest = Forest::parse("test_input.txt");
         assert_eq!(
             vec![
-                Tree(0, 0, 3),
-                Tree(1, 0, 0),
-                Tree(2, 0, 3),
-                Tree(3, 0, 7),
-                Tree(4, 0, 3)
+                Tree::new(0, 0, 3),
+                Tree::new(1, 0, 0),
+                Tree::new(2, 0, 3),
+                Tree::new(3, 0, 7),
+                Tree::new(4, 0, 3)
             ],
             forest.horizontal(0)
         );
         assert_eq!(
             vec![
-                Tree(0, 2, 6),
-                Tree(1, 2, 5),
-                Tree(2, 2, 3),
-                Tree(3, 2, 3),
-                Tree(4, 2, 2)
+                Tree::new(0, 2, 6),
+                Tree::new(1, 2, 5),
+                Tree::new(2, 2, 3),
+                Tree::new(3, 2, 3),
+                Tree::new(4, 2, 2)
             ],
             forest.horizontal(2)
         );
         assert_eq!(
             vec![
-                Tree(0, 4, 3),
-                Tree(1, 4, 5),
-                Tree(2, 4, 3),
-                Tree(3, 4, 9),
-                Tree(4, 4, 0)
+                Tree::new(0, 4, 3),
+                Tree::new(1, 4, 5),
+                Tree::new(2, 4, 3),
+                Tree::new(3, 4, 9),
+                Tree::new(4, 4, 0)
             ],
             forest.horizontal(4)
         );
@@ -185,31 +193,31 @@ mod tests {
         let forest = Forest::parse("test_input.txt");
         assert_eq!(
             vec![
-                Tree(0, 0, 3),
-                Tree(0, 1, 2),
-                Tree(0, 2, 6),
-                Tree(0, 3, 3),
-                Tree(0, 4, 3)
+                Tree::new(0, 0, 3),
+                Tree::new(0, 1, 2),
+                Tree::new(0, 2, 6),
+                Tree::new(0, 3, 3),
+                Tree::new(0, 4, 3)
             ],
             forest.vertical(0)
         );
         assert_eq!(
             vec![
-                Tree(2, 0, 3),
-                Tree(2, 1, 5),
-                Tree(2, 2, 3),
-                Tree(2, 3, 5),
-                Tree(2, 4, 3)
+                Tree::new(2, 0, 3),
+                Tree::new(2, 1, 5),
+                Tree::new(2, 2, 3),
+                Tree::new(2, 3, 5),
+                Tree::new(2, 4, 3)
             ],
             forest.vertical(2)
         );
         assert_eq!(
             vec![
-                Tree(4, 0, 3),
-                Tree(4, 1, 2),
-                Tree(4, 2, 2),
-                Tree(4, 3, 9),
-                Tree(4, 4, 0)
+                Tree::new(4, 0, 3),
+                Tree::new(4, 1, 2),
+                Tree::new(4, 2, 2),
+                Tree::new(4, 3, 9),
+                Tree::new(4, 4, 0)
             ],
             forest.vertical(4)
         );
@@ -218,14 +226,14 @@ mod tests {
     #[test]
     fn test_select_visible() {
         assert_eq!(
-            vec![Tree(0, 4, 3), Tree(1, 4, 5), Tree(3, 4, 9)],
+            vec![Tree::new(0, 4, 3), Tree::new(1, 4, 5), Tree::new(3, 4, 9)],
             visible_from_outside(
                 vec![
-                    Tree(0, 4, 3),
-                    Tree(1, 4, 5),
-                    Tree(2, 4, 3),
-                    Tree(3, 4, 9),
-                    Tree(4, 4, 0)
+                    Tree::new(0, 4, 3),
+                    Tree::new(1, 4, 5),
+                    Tree::new(2, 4, 3),
+                    Tree::new(3, 4, 9),
+                    Tree::new(4, 4, 0)
                 ]
                 .iter()
             )
@@ -236,16 +244,16 @@ mod tests {
 
     #[test]
     fn part1_final() {
-        assert_eq!(1803, part1("input.txt"));
+        assert_eq!(1803, part1(&Forest::parse("input.txt")));
     }
 
     #[test]
     fn part2_sample() {
-        assert_eq!(8, part2("test_input.txt"));
+        assert_eq!(8, part2(&Forest::parse("test_input.txt")));
     }
 
     #[test]
     fn part2_final() {
-        assert_eq!(268912, part2("input.txt"));
+        assert_eq!(268912, part2(&Forest::parse("input.txt")));
     }
 }
