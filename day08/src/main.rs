@@ -13,10 +13,12 @@ fn main() {
 fn part1(forest: &Forest) -> usize {
     let mut visible = HashSet::new();
     for i in 0..forest.grid_size {
-        visible.extend(visible_from_outside(forest.horizontal(i).iter()).map(|t| t.to_xy()));
-        visible.extend(visible_from_outside(forest.horizontal(i).iter().rev()).map(|t| t.to_xy()));
-        visible.extend(visible_from_outside(forest.vertical(i).iter()).map(|t| t.to_xy()));
-        visible.extend(visible_from_outside(forest.vertical(i).iter().rev()).map(|t| t.to_xy()));
+        let horizontal = forest.horizontal(i);
+        let vertical = forest.vertical(i);
+        visible.extend(visible_from_outside(horizontal.iter()).map(|t| t.to_xy()));
+        visible.extend(visible_from_outside(horizontal.iter().rev()).map(|t| t.to_xy()));
+        visible.extend(visible_from_outside(vertical.iter()).map(|t| t.to_xy()));
+        visible.extend(visible_from_outside(vertical.iter().rev()).map(|t| t.to_xy()));
     }
 
     visible.len()
@@ -76,9 +78,9 @@ fn visible_from_outside<'a>(
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 struct Tree {
-    x: usize, 
-    y: usize, 
-    height: u8
+    x: usize,
+    y: usize,
+    height: u8,
 }
 
 impl Tree {
