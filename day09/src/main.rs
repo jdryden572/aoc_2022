@@ -28,12 +28,12 @@ fn part1(path: &str) -> usize {
             tail_spots.insert(tail);
         }
     }
-    
+
     tail_spots.len()
 }
 
 fn part2(path: &str) -> usize {
-    let mut knots = [Pt::new(0,0); 10];
+    let mut knots = [Pt::new(0, 0); 10];
 
     let mut tail_spots = HashSet::new();
     tail_spots.insert(knots[9]);
@@ -58,39 +58,8 @@ fn part2(path: &str) -> usize {
             tail_spots.insert(knots[9]);
         }
     }
-    
+
     tail_spots.len()
-}
-
-fn print(knots: &[Pt]) {
-    let x_iter = knots.iter().map(|k| k.x);
-    let x_min = x_iter.clone().min().unwrap();
-    let x_max = x_iter.max().unwrap();
-    let y_iter = knots.iter().map(|k| k.y);
-    let y_min = y_iter.clone().min().unwrap();
-    let y_max = y_iter.max().unwrap();
-
-    let x_range = (x_max - x_min) as usize;
-    let y_range = (y_max - y_min) as usize;
-
-    let row = vec!['.'; x_range + 1];
-    let mut grid = vec![row; y_range + 1];
-
-    for (i, &Pt { x, y }) in knots.iter().enumerate().rev() {
-        let x = (x - x_min) as usize;
-        let y = (y - y_min) as usize;
-        let c = if i == 0 {
-            'H'
-        } else {
-            (i as u8 + '0' as u8) as char
-        };
-        grid[y][x] = c;
-    }
-
-    for row in grid.into_iter().rev() {
-        println!("{}", row.into_iter().collect::<String>());
-    }
-    println!();
 }
 
 fn follow(head: Pt, tail: Pt) -> Pt {
@@ -116,7 +85,7 @@ struct Pt {
 
 impl Pt {
     fn new(x: i32, y: i32) -> Self {
-        Self {x, y}
+        Self { x, y }
     }
 }
 
@@ -153,12 +122,12 @@ mod tests {
 
     #[test]
     fn test_follow() {
-        assert_eq!(Pt::new(0,0), follow(Pt::new(1,0), Pt::new(0,0)));
-        assert_eq!(Pt::new(1,0), follow(Pt::new(2,0), Pt::new(0,0)));
-        assert_eq!(Pt::new(1,0), follow(Pt::new(2,1), Pt::new(1,0)));
-        assert_eq!(Pt::new(2,1), follow(Pt::new(2,2), Pt::new(1,0)));
+        assert_eq!(Pt::new(0, 0), follow(Pt::new(1, 0), Pt::new(0, 0)));
+        assert_eq!(Pt::new(1, 0), follow(Pt::new(2, 0), Pt::new(0, 0)));
+        assert_eq!(Pt::new(1, 0), follow(Pt::new(2, 1), Pt::new(1, 0)));
+        assert_eq!(Pt::new(2, 1), follow(Pt::new(2, 2), Pt::new(1, 0)));
 
-        assert_eq!(Pt::new(1,1), follow(Pt::new(2,2), Pt::new(0,0)));
+        assert_eq!(Pt::new(1, 1), follow(Pt::new(2, 2), Pt::new(0, 0)));
     }
 
     #[test]
