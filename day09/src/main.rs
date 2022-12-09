@@ -103,7 +103,7 @@ enum Dir {
 
 impl Move {
     fn parse(input: &str) -> Self {
-        let (dir, steps) = input.split_once(" ").unwrap();
+        let (dir, steps) = input.split_once(' ').unwrap();
         let steps = steps.parse().unwrap();
         let dir = match dir {
             "U" => Dir::Up,
