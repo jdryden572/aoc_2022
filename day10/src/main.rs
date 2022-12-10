@@ -6,9 +6,9 @@ fn main() {
     let instructions = instructions("input.txt");
     let now = Instant::now();
     let cpu = run(&instructions);
-    let elapsed = now.elapsed();
-    println!("Part 1: {} ({:?})", cpu.signal_strength, elapsed);
-    println!("Part 2:\r\n{}", cpu.print());
+    println!("Elapsed: {:?}", now.elapsed());
+    println!("Part 1: {}", cpu.signal_strength);
+    println!("Part 2:\n{}", cpu.print());
 }
 
 fn instructions(path: &str) -> Vec<String> {
@@ -39,7 +39,7 @@ struct Cpu {
 
 impl Cpu {
     fn new() -> Self {
-        Self { 
+        Self {
             cycle: 0,
             x: 1,
             signal_strength: 0,
@@ -48,19 +48,17 @@ impl Cpu {
     }
 
     fn noop(&mut self) {
-        self.cycle += 1;
         self.clock();
     }
 
     fn addx(&mut self, val: i64) {
-        self.cycle += 1;
         self.clock();
-        self.cycle += 1;
         self.clock();
         self.x += val;
     }
 
     fn clock(&mut self) {
+        self.cycle += 1;
         self.update_strength();
         self.draw_pixel();
     }
@@ -75,14 +73,14 @@ impl Cpu {
         let cycle = self.cycle - 1;
         let row = cycle / 40;
         let pos = cycle % 40;
-        
+
         if pos.abs_diff(self.x) <= 1 {
             self.pixels[row as usize][pos as usize] = '#';
-        } 
+        }
     }
 
     fn print(&self) -> String {
-        let mut output = String::with_capacity(240);
+        let mut output = String::with_capacity(6 * 40);
         for row in self.pixels {
             for ch in row {
                 output.push(ch);
@@ -113,7 +111,8 @@ mod tests {
     #[test]
     fn part2_sample() {
         let expected = 
-"##..##..##..##..##..##..##..##..##..##..
+"
+##..##..##..##..##..##..##..##..##..##..
 ###...###...###...###...###...###...###.
 ####....####....####....####....####....
 #####.....#####.....#####.....#####.....
@@ -121,13 +120,14 @@ mod tests {
 #######.......#######.......#######.....
 ";
         let cpu = run(&instructions("test_input.txt"));
-        assert_eq!(expected, &cpu.print());
+        assert_eq!(expected, &format!("\n{}", cpu.print()));
     }
 
     #[test]
     fn part2_final() {
         let expected = 
-"####..##..#.....##..#..#.#....###...##..
+"
+####..##..#.....##..#..#.#....###...##..
 #....#..#.#....#..#.#..#.#....#..#.#..#.
 ###..#..#.#....#....#..#.#....#..#.#....
 #....####.#....#.##.#..#.#....###..#.##.
@@ -135,6 +135,6 @@ mod tests {
 ####.#..#.####..###..##..####.#.....###.
 ";
         let cpu = run(&instructions("input.txt"));
-        assert_eq!(expected, &cpu.print());
+        assert_eq!(expected, &format!("\n{}", cpu.print()));
     }
 }
