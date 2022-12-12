@@ -5,11 +5,25 @@ fn main() {
     let monkeys = parse_monkeys(&input);
     let now = Instant::now();
     println!("Part 1: {} ({:?})", part1(monkeys), now.elapsed());
+
+    let monkeys = parse_monkeys(&input);
+    let now = Instant::now();
+    println!("Part 2: {} ({:?})", part2(monkeys), now.elapsed());
 }
 
 fn part1(mut monkeys: Vec<Monkey>) -> usize {
     for _ in 0..20 {
         simulate_round(&mut monkeys, |w| w / 3);
+    }
+
+    product_of_top_two(monkeys)
+}
+
+fn part2(mut monkeys: Vec<Monkey>) -> usize {
+    let factor: usize = monkeys.iter().map(|m| m.divisible_by).product();
+
+    for _ in 0..10_000 {
+        simulate_round(&mut monkeys, |w| w % factor);
     }
 
     product_of_top_two(monkeys)
@@ -192,5 +206,12 @@ mod tests {
         let input = std::fs::read_to_string("input.txt").unwrap();
         let monkeys = parse_monkeys(&input);
         assert_eq!(88208, part1(monkeys));
+    }
+
+    #[test]
+    fn part2_sample() {
+        let input = std::fs::read_to_string("test_input.txt").unwrap();
+        let monkeys = parse_monkeys(&input);
+        assert_eq!(2713310158, part2(monkeys));
     }
 }
