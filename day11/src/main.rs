@@ -9,20 +9,27 @@ fn main() {
 
 fn part1(mut monkeys: Vec<Monkey>) -> usize {
     for _ in 0..20 {
-        simulate_round(&mut monkeys);
+        simulate_round(&mut monkeys, |w| w / 3);
     }
 
+    product_of_top_two(monkeys)
+}
+
+fn product_of_top_two(monkeys: Vec<Monkey>) -> usize {
     let mut counts: Vec<_> = monkeys.iter().map(|m| m.inspection_count).collect();
     counts.sort();
     counts.iter().rev().take(2).product()
 }
 
-fn simulate_round(monkeys: &mut [Monkey]) {
+fn simulate_round<R>(monkeys: &mut [Monkey], reduce_worry: R) 
+where
+    R: Fn(usize) -> usize,
+{
     for i in 0..monkeys.len() {
         while let Some(val) = monkeys.get_mut(i).unwrap().items.pop_front() {
             monkeys.get_mut(i).unwrap().inspection_count += 1;
             let monkey = &monkeys[i];
-            let worry_level = monkey.operation.run(val) / 3;
+            let worry_level = reduce_worry(monkey.operation.run(val));
             let give_to = if worry_level % monkey.divisible_by == 0 {
                 monkey.if_true
             } else {
