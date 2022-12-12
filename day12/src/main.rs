@@ -6,6 +6,8 @@ fn main() {
     let grid = parse_grid("input.txt");
     let now = Instant::now();
     println!("Part 1: {} ({:?})", part1(&grid), now.elapsed());
+    let now = Instant::now();
+    println!("Part 2: {} ({:?})", part2(&grid), now.elapsed());
 }
 
 fn parse_grid(path: &str) -> Vec<Vec<u8>> {
@@ -21,7 +23,18 @@ struct Visit {
 
 fn part1(grid: &[Vec<u8>]) -> usize {
     let start = find_start(grid);
-    
+    shortest_distance(start, grid)
+}
+
+fn part2(grid: &[Vec<u8>]) -> usize {
+    let mut min = usize::MAX;
+    for start in find_potential_starts(grid) {
+        min = min.min(shortest_distance(start, grid));
+    }
+    min
+}
+
+fn shortest_distance(start: (usize, usize), grid: &[Vec<u8>]) -> usize {
     let mut visited = HashMap::new();
     let mut to_visit = VecDeque::new();
 
@@ -33,8 +46,6 @@ fn part1(grid: &[Vec<u8>]) -> usize {
     while let Some(visit) = to_visit.pop_front() {
         let (x, y) = visit.pos;
         if grid[y][x] == b'E' {
-
-
             return visit.dist;
         }
 
@@ -48,7 +59,7 @@ fn part1(grid: &[Vec<u8>]) -> usize {
         }
     }
 
-    unreachable!()
+    usize::MAX
 }
 
 fn neighbors(grid: &[Vec<u8>], (x, y): (usize, usize)) -> impl Iterator<Item = (usize, usize)> + '_ {
@@ -81,20 +92,38 @@ fn find_start(grid: &[Vec<u8>]) -> (usize, usize) {
     unreachable!()
 }
 
+fn find_potential_starts(grid: &[Vec<u8>]) -> impl Iterator<Item = (usize, usize)> {
+    let mut starts = Vec::new();
+    for (y, row) in grid.iter().enumerate() {
+        for (x, &pos) in row.iter().enumerate() {
+            if pos == b'S' || pos == b'a' {
+                starts.push((x, y));
+            }
+        }
+    }
+    starts.into_iter()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn part1_sample() {
-        let grid = parse_grid("test_input.txt");
-        assert_eq!(31, part1(&grid));
-    }
+    // #[test]
+    // fn part1_sample() {
+    //     let grid = parse_grid("test_input.txt");
+    //     assert_eq!(31, part1(&grid));
+    // }
 
     #[test]
     fn part1_final() {
         let grid = parse_grid("input.txt");
         assert_eq!(481, part1(&grid));
+    }
+
+    #[test]
+    fn part2_final() {
+        let grid = parse_grid("input.txt");
+        assert_eq!(480, part2(&grid));
     }
 
     #[test]
